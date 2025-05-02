@@ -1,0 +1,137 @@
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const validator = require("validator");
+
+const User = require("../models/user");
+const { getRandomVerifyCode, getVerifyCodeExpireTimeout } = require("../utils/utils");
+
+const router = express.Router();
+const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
+
+// Register
+router.post("/register", async (req, res) => {
+  const { mobile, password } = req.body;
+  const trimmedPassword = password.trim();
+
+  if (!/^0/.test(mobile) || !validator.isMobilePhone(mobile, "si-LK")) {
+    return res.status(400).json({ error: "Invalid mobile number format" });
+  }
+
+  if (
+    !validator.isStrongPassword(trimmedPassword, {
+      minSymbols: 0,
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+    })
+  ) {
+    return res.status(400).json({
+      error:
+        "Password must be at least 8 characters with uppercase, lowercase, and number",
+    });
+  }
+
+  const existingUser = await User.findByMobile(mobile);
+  if (existingUser) {
+    return res.status(400).json({ error: "Mobile number already registered" });
+  }
+
+  try {
+    const hashed = await bcrypt.hash(trimmedPassword, saltRounds);
+    const user = await User.create(mobile, hashed);
+    const token = jwt.sign(
+      { mobile, is_verified: user.is_verified },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m" }
+    );
+    res.json({
+      message: "User registered successfully",
+      mobile: user.mobile,
+      is_verified: user.is_verified,
+      token,
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ error: "Server error during registration" });
+  }
+});
+
+// Login
+router.post("/login", async (req, res) => {
+  const { mobile, password } = req.body;
+  const trimmedPassword = password.trim();
+
+  try {
+    const user = await User.findByMobile(mobile);
+    if (user && (await bcrypt.compare(trimmedPassword, user.password))) {
+      const token = jwt.sign(
+        { mobile, is_verified: user.is_verified },
+        process.env.JWT_SECRET,
+        { expiresIn: user.is_verified ? "1h" : "5m" }
+      );
+      res.json({
+        message: "Login successful",
+        token,
+        is_verified: user.is_verified,
+      });
+    } else {
+      res.status(401).json({ error: "Invalid mobile or password" });
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Server error during login" });
+  }
+});
+
+// Send Verification Code
+router.post("/send-code", async (req, res) => {
+  const { mobile, type } = req.body;
+  const code = getRandomVerifyCode();
+  const expiresAt = new Date(Date.now() + getVerifyCodeExpireTimeout());
+
+  try {
+    const u = await User.findByMobile(mobile);
+    if (!u) return res.status(400).json({ error: "User does not exist" });
+
+    await User.newCode(u.id, code, type, expiresAt);
+    console.log(`Verification code for ${mobile} (${type}): ${code}`);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Verify User
+router.post("/verify-user-code", async (req, res) => {
+  const { mobile, code } = req.body;
+  const type = "mobile_verification";
+
+  if (!code || code.length !== 6 || !validator.isNumeric(code)) {
+    return res.status(400).json({ error: "Invalid verification code" });
+  }
+
+  try {
+    const u = await User.findByMobile(mobile);
+    if (!u) return res.status(400).json({ error: "User does not exist" });
+
+    const isVerified = await User.verifyUser(u.id, code, type);
+    if (isVerified) {
+      const token = jwt.sign(
+        { mobile, is_verified: true },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      res.json({ success: true, token });
+    } else {
+      res.status(400).json({ error: "Invalid or expired verification code" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+module.exports = router;

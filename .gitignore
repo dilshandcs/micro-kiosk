@@ -1,0 +1,7 @@
+backend/coverage/
+backend/node_modules/
+
+.vscode/
+.git/
+.expo/
+

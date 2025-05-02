@@ -1,0 +1,278 @@
+openapi: 3.1.0
+info:
+  title: User Authentication API
+  version: 1.0.0
+  description: API for user registration, login, and verification with JWT authentication and rate limiting.
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+    RegisterRequest:
+      type: object
+      required:
+        - mobile
+        - password
+      properties:
+        mobile:
+          type: string
+          description: Mobile number in Sri Lankan format (e.g., 0771234567).
+        password:
+          type: string
+          description: User's password.
+    RegisterResponse:
+      type: object
+      required:
+        - mobile
+        - is_verified
+        - token
+      properties:
+        message:
+          type: string
+        mobile:
+          type: string
+        is_verified:
+          type: boolean
+        token:
+          type: string
+    LoginRequest:
+      type: object
+      required:
+        - mobile
+        - password
+      properties:
+        mobile:
+          type: string
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - is_verified
+      properties:
+        message:
+          type: string
+        token:
+          type: string
+        is_verified:
+          type: boolean
+    UserInfoResponse:
+      type: object
+      required:
+        - mobile
+        - is_verified
+      properties:
+        mobile:
+          type: string
+        is_verified:
+          type: boolean
+    SendCodeRequest:
+      type: object
+      required:
+        - mobile
+        - type
+      properties:
+        mobile:
+          type: string
+          description: The mobile the user who is requesting the code.
+        type:
+          type: string
+          enum: [mobile_verification, password_reset]
+          description: The type of the verification code (e.g., mobile verification or password reset).
+    SendCodeResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the verification code was successfully sent.
+    VerifyUserCodeRequest:
+      type: object
+      required:
+        - mobile
+        - code
+      properties:
+        mobile:
+          type: string
+          description: The mobile of the user who is verifying the code.
+        code:
+          type: string
+          description: The 6-digit verification code to be verified.
+    VerifyUserCodeResponse:
+      type: object
+      required:
+        - success
+        - token
+      properties:
+        success:
+          type: boolean
+          description: Whether the code was successfully verified.
+        token:
+          type: string
+          description: JWT token for the user if the verification is successful.
+  responses:
+    Unauthorized:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad request due to validation errors
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+security:
+  - BearerAuth: []
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /login:
+    post:
+      summary: Login an existing user
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /send-code:
+    post:
+      summary: Send a verification code to the user
+      operationId: sendCode
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendCodeRequest'
+      responses:
+        '200':
+          description: Verification code sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendCodeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /verify-user-code:
+    post:
+      summary: Verify the entered verification code
+      operationId: verifyUserCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyUserCodeRequest'
+      responses:
+        '200':
+          description: Code verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyUserCodeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /me:
+    get:
+      summary: Get current user information
+      operationId: getUserInfo
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /send-notification:
+    post:
+      summary: Send a notification (mocked)
+      operationId: sendNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
