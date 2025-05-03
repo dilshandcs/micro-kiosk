@@ -1,0 +1,25 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+    },
+    // "typeRoots": [
+    //   "./node_modules/@types",
+    //   "./types"
+    // ],
+    "types": ["jest", "cypress"]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "__tests__/integration-tests/setupMocks.tsx",
+    "app/(auth)/login.tsx"  ]
+}

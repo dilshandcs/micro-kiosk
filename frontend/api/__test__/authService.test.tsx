@@ -1,0 +1,145 @@
+jest.unmock("../authService");
+import { registerUser, verifyUserCode, getUserInfo } from "../authService";
+import * as authService from "../authService";
+import {
+  LoginResponse,
+  RegisterResponse,
+  UserInfoResponse,
+  VerifyUserCodeResponse,
+} from "../openapi";
+
+jest.mock("../openapi");
+
+describe("authService", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("loginUser", () => {
+    it("should call loginUser API and return data on success", async () => {
+      const mockResponse: LoginResponse = {
+        token: "test-token",
+        is_verified: true,
+      };
+
+      authService.api.loginUser = jest
+        .fn()
+        .mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await authService.loginUser("1234567890", "password");
+
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should throw an error if loginUser API fails", async () => {
+      authService.api.loginUser = jest
+        .fn()
+        .mockRejectedValue(new Error("Login failed"));
+
+      await expect(
+        authService.loginUser("1234567890", "password")
+      ).rejects.toThrow("Login failed");
+    });
+  });
+
+  describe("registerUser", () => {
+    it("should call registerUser API and return data on success", async () => {
+      const mockResponse: RegisterResponse = {
+        mobile: "1234567890",
+        is_verified: false,
+        token: "test-token",
+      };
+      authService.api.registerUser = jest
+        .fn()
+        .mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await registerUser("1234567890", "password");
+
+      expect(authService.api.registerUser).toHaveBeenCalledWith({
+        mobile: "1234567890",
+        password: "password",
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should throw an error if registerUser API fails", async () => {
+      authService.api.registerUser = jest
+        .fn()
+        .mockRejectedValue(new Error("Registration failed"));
+
+      await expect(registerUser("1234567890", "password")).rejects.toThrow(
+        "Registration failed"
+      );
+      expect(authService.api.registerUser).toHaveBeenCalledWith({
+        mobile: "1234567890",
+        password: "password",
+      });
+    });
+  });
+
+  describe("verifyUserCode", () => {
+    it("should call verifyUserCode API and return data on success", async () => {
+      const mockResponse: VerifyUserCodeResponse = {
+        token: "test-token",
+        success: false,
+      };
+      authService.api.verifyUserCode = jest
+        .fn()
+        .mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await verifyUserCode("1234567890", "123456", "test-token");
+
+      expect(authService.api.verifyUserCode).toHaveBeenCalledWith(
+        { mobile: "1234567890", code: "123456" },
+        { headers: { Authorization: `Bearer test-token` } }
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should throw an error if verifyUserCode API fails", async () => {
+      authService.api.verifyUserCode = jest
+        .fn()
+        .mockRejectedValue(new Error("Verification failed"));
+
+      await expect(
+        verifyUserCode("1234567890", "123456", "test-token")
+      ).rejects.toThrow("Verification failed");
+      expect(authService.api.verifyUserCode).toHaveBeenCalledWith(
+        { mobile: "1234567890", code: "123456" },
+        { headers: { Authorization: `Bearer test-token` } }
+      );
+    });
+  });
+
+  describe("getUserInfo", () => {
+    it("should call getUserInfo API and return data on success", async () => {
+      const mockResponse: UserInfoResponse = {
+        mobile: "0701234567",
+        is_verified: false,
+      };
+      authService.api.getUserInfo = jest
+        .fn()
+        .mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await getUserInfo("test-token");
+
+      expect(authService.api.getUserInfo).toHaveBeenCalledWith({
+        headers: { Authorization: "Bearer test-token" },
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should throw an error if getUserInfo API fails", async () => {
+      authService.api.getUserInfo = jest
+        .fn()
+        .mockRejectedValue(new Error("Get user info failed"));
+
+      await expect(getUserInfo("test-token")).rejects.toThrow(
+        "Get user info failed"
+      );
+      expect(authService.api.getUserInfo).toHaveBeenCalledWith({
+        headers: { Authorization: "Bearer test-token" },
+      });
+    });
+  });
+});

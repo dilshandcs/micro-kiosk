@@ -1,0 +1,80 @@
+{
+  "login": {
+    "header": {
+      "title": "පිවිසුම"
+    },
+    "screen": {
+      "error": {
+        "invalidCred": "වලංගු නොවන ජංගම දුරකථන අංකයක් හෝ රහස් ඛේතයක් ඇතුලත් කර ඇත."
+      },
+      "label": {
+        "login": "පිවිසුම"
+      },
+      "input": {
+        "mobile": "ලියාපදිංචි දුරකථන අංකය",
+        "password": "රහස් ඛේතය",
+        "hidePassword": "login.screen.input.hidePassword",
+        "showPassword": "login.screen.input.showPassword"
+      },
+      "button": {
+        "login": "ඇතුල් වන්න",
+        "register": "අලුතින් ලියාපදිංචි වීමට මෙතැනින්"
+      }
+    }
+  },
+  "register": {
+    "header": {
+      "title": "ලියාපදිංචි වීම"
+    },
+    "screen": {
+      "error": {
+        "invalidMobile": "දුරකථන අංකය වලංගු ශ්\u200dරී ලාංකික ජංගම දුරකථන අංකයක් විය යුතුය.",
+        "invalidPassword": "රහස් ඛේතය අවම වශයෙන් අක්ෂර 8 ක් විය යුතු අතර, එහි අවම වශයෙන් 1 ලොකු අකුරක් (uppercase letter), 1 කුඩා අකුරක් (lowercase letter) සහ 1 අංකයක් (number) අඩංගු විය යුතුය. රහස් ඛේතය සඳහා ඉංග්\u200dරීසි අකුරන් සහ අංකයන් පමණක් භාවිතා කළ යුතුය.",
+        "regFailed": "ලියාපදිංචිය අසාර්ථකයි. ජංගම දුරකථන අංකය දැනටමත් භාවිතා කර තිබිය හැක"
+      },
+      "label": {
+        "register": "ලියාපදිංචි වීම"
+      },
+      "input": {
+        "mobile": "SMS ලැබිය හැකි අංකයක් විය යුතුයි",
+        "password": "රහස් ඛේතය"
+      },
+      "button": {
+        "register": "ලියාපදිංචි වන්න",
+        "login": "පිවිසුම වෙත"
+      }
+    }
+  },
+  "home": {
+    "header": {
+      "title": "මුල් පිටුව"
+    },
+    "screen": {
+      "text": {
+        "main": "මුල් පිටුවට සාදරයෙන් පිළිගනිමු!"
+      }
+    }
+  },
+  "verify": {
+    "header": {
+      "title": "හදුනා ගැනීමේ කේතය"
+    },
+    "screen": {
+      "error": {
+        "invalidCode": "හදුනා ගැනීමේ කේතය වලංගු නොවේ."
+      },
+      "label": {
+        "enterCode": "හදුනා ගැනීමේ කේතය ඇතුළත් කරන්න"
+      },
+      "input": {
+        "code": "ඉලක්කම්-6 කේතය ඇතුළත් කරන්න"
+      },
+      "button": {
+        "verify": "තහවුරු කරන්න"
+      }
+    }
+  },
+  "header": {
+    "back": "ආපසු"
+  }
+}

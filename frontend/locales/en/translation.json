@@ -1,0 +1,80 @@
+{
+  "login": {
+    "header": {
+      "title": "Login"
+    },
+    "screen": {
+      "error": {
+        "invalidCred": "Invalid mobile number or password"
+      },
+      "label": {
+        "login": "Login"
+      },
+      "input": {
+        "mobile": "Mobile Number",
+        "password": "Password",
+        "hidePassword": "Hide Password",
+        "showPassword": "Show Password"
+      },
+      "button": {
+        "login": "Login",
+        "register": "Go to Register"
+      }
+    }
+  },
+  "register": {
+    "header": {
+      "title": "Register"
+    },
+    "screen": {
+      "error": {
+        "invalidMobile": "The number must be a valid Sri Lankan mobile phone number, with or without 0 in the beginning.",
+        "invalidPassword": "The password must be at least 8 characters, including at least 1 uppercase, lowercase, and number.",
+        "regFailed": "'Registration failed. Mobile number might already be used.'"
+      },
+      "label": {
+        "register": "Register"
+      },
+      "input": {
+        "mobile": "701234567",
+        "password": "Passoword"
+      },
+      "button": {
+        "register": "Register",
+        "login": "Go to Login"
+      }
+    }
+  },
+  "home": {
+    "header": {
+      "title": "Home"
+    },
+    "screen": {
+      "text": {
+        "main": "Welcome to the Home Page!"
+      }
+    }
+  },
+  "verify": {
+    "header": {
+      "title": "Verify"
+    },
+    "screen": {
+      "error": {
+        "invalidCode": "Invalid verification code"
+      },
+      "label": {
+        "enterCode": "Enter Verification Code"
+      },
+      "input": {
+        "code": "Enter 6-digit code"
+      },
+      "button": {
+        "verify": "Verify"
+      }
+    }
+  },
+  "header": {
+    "back": "Back"
+  }
+}
