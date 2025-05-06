@@ -37,18 +37,27 @@ const User = {
     );
   },
 
-  verifyUser: async (userId, code, type) => {
+  findValidCode: async (userId, code, type) => {
     const result = await pool.query(
       `SELECT * FROM verification_codes
        WHERE user_id = $1 AND code = $2 AND type = $3
        AND expires_at > NOW() AND consumed = FALSE`,
       [userId, code, type]
     );
-    if (result.rows.length === 0) {
-      return false;
-    }
+      if (!result || result.rows.length === 0) {
+        return null;
+      }
 
-    const codeId = result.rows[0].id;
+      return result.rows[0].id;
+
+  },
+
+  verifyUser: async (userId, code, type) => {
+    const codeId = await User.findValidCode(userId, code, type);
+
+    if (!codeId) {
+      return false; // Code not found or expired
+    }
 
     await pool.query(
       `UPDATE verification_codes SET consumed = TRUE WHERE id = $1`,
@@ -64,6 +73,25 @@ const User = {
 
     return true;
   },
+  updatePassword: async (userId, code, hashedPassword, type) => {
+    const codeId = await User.findValidCode(userId, code, type);
+
+    if (!codeId) {
+      return false; // Code not found or expired
+    }
+
+    await pool.query(
+      `UPDATE verification_codes SET consumed = TRUE WHERE id = $1`,
+      [codeId]
+    );
+
+    await pool.query(
+      `UPDATE users SET password = $1 WHERE id = $2`,
+      [hashedPassword, userId]
+    );
+
+    return true
+  }
 };
 
 module.exports = User;

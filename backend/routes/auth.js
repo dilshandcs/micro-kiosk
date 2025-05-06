@@ -2,15 +2,24 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
+const authMiddleware = require("../middleware/auth");
+const { createRateLimiter } = require("../middleware/limiter");
+
+const rateLimitMax = parseInt(process.env.RATE_LIMIT_MAX, 10) || 5;
+const registerLimiter = createRateLimiter(rateLimitMax); // max 3 for register
+const loginLimiter = createRateLimiter(rateLimitMax);
+const sendCodeLimiter = createRateLimiter(rateLimitMax);
+const verifyUserCodeLimiter = createRateLimiter(rateLimitMax);
+const resetPasswordLimiter = createRateLimiter(rateLimitMax);
 
 const User = require("../models/user");
-const { getRandomVerifyCode, getVerifyCodeExpireTimeout } = require("../utils/utils");
+const { getRandomVerifyCode, getVerifyCodeExpireTimeout, isValidPassword } = require("../utils/utils");
 
 const router = express.Router();
 const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
 
 // Register
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   const { mobile, password } = req.body;
   const trimmedPassword = password.trim();
 
@@ -18,15 +27,7 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ error: "Invalid mobile number format" });
   }
 
-  if (
-    !validator.isStrongPassword(trimmedPassword, {
-      minSymbols: 0,
-      minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-    })
-  ) {
+  if (!isValidPassword(password)) {
     return res.status(400).json({
       error:
         "Password must be at least 8 characters with uppercase, lowercase, and number",
@@ -59,7 +60,7 @@ router.post("/register", async (req, res) => {
 });
 
 // Login
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   const { mobile, password } = req.body;
   const trimmedPassword = password.trim();
 
@@ -86,7 +87,7 @@ router.post("/login", async (req, res) => {
 });
 
 // Send Verification Code
-router.post("/send-code", async (req, res) => {
+router.post("/send-code", sendCodeLimiter, async (req, res) => {
   const { mobile, type } = req.body;
   const code = getRandomVerifyCode();
   const expiresAt = new Date(Date.now() + getVerifyCodeExpireTimeout());
@@ -105,7 +106,7 @@ router.post("/send-code", async (req, res) => {
 });
 
 // Verify User
-router.post("/verify-user-code", async (req, res) => {
+router.post("/verify-user-code", authMiddleware, verifyUserCodeLimiter, async (req, res) => {
   const { mobile, code } = req.body;
   const type = "mobile_verification";
 
@@ -125,6 +126,41 @@ router.post("/verify-user-code", async (req, res) => {
         { expiresIn: "1h" }
       );
       res.json({ success: true, token });
+    } else {
+      res.status(400).json({ error: "Invalid or expired verification code" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Verify User
+router.post("/reset-password", resetPasswordLimiter, async (req, res) => {
+  const { mobile, code, newPassword } = req.body;
+  const trimmedPassword = newPassword.trim();
+
+  const type = "password_reset";
+
+  if (!code || code.length !== 6 || !validator.isNumeric(code)) {
+    return res.status(400).json({ error: "Invalid verification code" });
+  }
+
+  if (!isValidPassword(trimmedPassword)) {
+    return res.status(400).json({
+      error:
+        "Password must be at least 8 characters with uppercase, lowercase, and number",
+    });
+  }
+
+  try {
+    const u = await User.findByMobile(mobile);
+    if (!u) return res.status(400).json({ error: "User does not exist" });
+
+    const hashed = await bcrypt.hash(trimmedPassword, saltRounds);
+    const isValidCode = await User.updatePassword(u.id, code, hashed, type);
+    if (isValidCode) {
+      res.json({ success: true });
     } else {
       res.status(400).json({ error: "Invalid or expired verification code" });
     }

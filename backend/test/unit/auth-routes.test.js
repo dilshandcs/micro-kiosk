@@ -494,6 +494,132 @@ describe("User Authentication API Tests", () => {
     });
   });
 
+  describe("POST /reset-password", () => {
+    it("should verify user with correct code", async () => {
+      const mockVerificationResult = true;
+      const hashedPassword = await bcryptjs.hash(mockUser.password, 10);
+
+      // Mock finding user and password comparison
+      User.findByMobile.mockResolvedValue({
+        ...mockUser,
+        password: hashedPassword,
+      });
+      User.updatePassword.mockResolvedValue(mockVerificationResult);
+
+      const response = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "123456",
+          newPassword: "Test1234",
+        });
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it("should return error if verification code is empty or doesn not contain only numbers, 6digits", async () => {
+      const response1 = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "A12345",
+          newPassword: "Test1234",
+        });
+console.log("rrrrrrrrr", response1.body);
+      expect(response1.status).toBe(400);
+      expect(response1.body.error).toBe("Invalid verification code");
+
+      const response2 = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "12345",
+          newPassword: "Test1234",
+        });
+
+      expect(response2.status).toBe(400);
+      expect(response2.body.error).toBe("Invalid verification code");
+
+      const response3 = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "",
+          newPassword: "Test1234",
+        });
+
+      expect(response3.status).toBe(400);
+      expect(response3.body.error).toBe("Invalid verification code");
+    });
+
+    it("should return error for invalid verification code", async () => {
+      const hashedPassword = await bcryptjs.hash(mockUser.password, 10);
+
+      // Mock finding user and password comparison
+      User.findByMobile.mockResolvedValue({
+        ...mockUser,
+        password: hashedPassword,
+      });
+      User.updatePassword.mockResolvedValue(false);
+
+      const response = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "123456",
+          newPassword: "Test1234",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("Invalid or expired verification code");
+    });
+
+    it("should return error if verification code requester  user not found ", async () => {
+      // Mock finding user and password comparison
+      User.findByMobile.mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "123456",
+          newPassword: "Test1234",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("User does not exist");
+    });
+
+    it("should return 500 error if database error ", async () => {
+      // Mock finding user and password comparison
+      User.findByMobile.mockRejectedValue(new Error("Database error"));
+
+      const response = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "123456",
+          newPassword: "Test1234",
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body.error).toMatch(/Database error/);
+    });
+
+    it("should return error if invalid mobile or password", async () => {
+      const response = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: mockUser.mobile,
+          code: "123456",
+          newPassword: "wrongPassword",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("Password must be at least 8 characters with uppercase, lowercase, and number");
+    });
+  });  
+
   // // Good to be last test because it unmocks the rate limiter which needs to be mocked for above describes
   // describe('Rate Limiter Tests', () => {
   //   const mobile = '0771234567';

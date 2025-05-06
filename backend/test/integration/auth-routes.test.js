@@ -239,7 +239,7 @@ describe("Auth Integration Tests", () => {
         type: "mobile_verification",
       });
       expect(res5.statusCode).toBe(200);
-      // invalid code
+      // verify user
       const res6 = await request(app)
         .post("/verify-user-code")
         .set("authorization", `Bearer ${res1.body.token}`)
@@ -308,6 +308,80 @@ describe("Auth Integration Tests", () => {
 
       expect(res.statusCode).toBe(401);
       expect(res.body.error).toMatch("Invalid or expired token");
+    });
+  });
+
+  describe("reset password and SendCode endpoint", () => {
+    let testMobile1 = "0781234560";
+    let testPassword1 = "Password1!";
+
+    beforeAll(async () => {
+      await cleanDB();
+      await insertRow(testMobile1, testPassword1, false);
+    });
+
+    it("should return 200 on valid verification code and same user cannot be verified twice", async () => {
+      const res1 = await request(app).post("/login").send({
+        mobile: testMobile1,
+        password: testPassword1,
+      });
+      expect(res1.statusCode).toBe(200);
+
+      // user doesn't exist
+      const res2 = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: "0781111111",
+          code: "123456",
+          newPassword: "Test1234",
+        });
+
+      expect(res2.statusCode).toBe(400);
+      expect(res2.body.error).toMatch(/User does not exist/);
+
+      // invalid code
+      const res3 = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: testMobile1,
+          code: "999999",
+          newPassword: "Test1234",
+        });
+
+      expect(res3.statusCode).toBe(400);
+      expect(res3.body.error).toMatch(/Invalid or expired verification code/);
+
+      getRandomVerifyCode.mockReturnValue("123456");
+
+      // send code code
+      const res5 = await request(app).post("/send-code").send({
+        mobile: testMobile1,
+        type: "password_reset",
+      });
+      expect(res5.statusCode).toBe(200);
+
+      const res6 = await request(app)
+        .post("/reset-password")
+        .send({
+          mobile: testMobile1,
+          code: "123456",
+          newPassword: "Test1234",
+        });
+      expect(res6.statusCode).toBe(200);
+
+      // previous password should not work
+      const res7 = await request(app).post("/login").send({
+        mobile: testMobile1,
+        password: testPassword1,
+      });
+      expect(res7.statusCode).toBe(401);
+
+      // new password should not work
+      const res8 = await request(app).post("/login").send({
+        mobile: testMobile1,
+        password: "Test1234",
+      });
+      expect(res8.statusCode).toBe(200);
     });
   });
 });

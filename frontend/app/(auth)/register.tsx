@@ -43,7 +43,6 @@ export default function RegisterScreen() {
       const res = await registerUser(formattedMobile, password);
 
       await login(res.token, res.is_verified, res.mobile); // Save token and user data in context
-      console.log('✅ Register response:', res);
       setError('');
       router.replace('/verify'); // Navigate to home after successful registration
     } catch (err) {

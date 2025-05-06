@@ -9,7 +9,8 @@ All URIs are relative to *http://localhost:3000*
 |[**registerUser**](#registeruser) | **POST** /register | Register a new user|
 |[**sendCode**](#sendcode) | **POST** /send-code | Send a verification code to the user|
 |[**sendNotification**](#sendnotification) | **POST** /send-notification | Send a notification (mocked)|
-|[**verifyUserCode**](#verifyusercode) | **POST** /verify-user-code | Verify the entered verification code|
+|[**updatePassword**](#updatepassword) | **POST** /reset-password | Verify the entered verification code and update the password|
+|[**verifyUserCode**](#verifyusercode) | **POST** /verify-user-code | Verify the entered verification code and vrify the user|
 
 # **getUserInfo**
 > UserInfoResponse getUserInfo()
@@ -263,6 +264,60 @@ const { status, data } = await apiInstance.sendNotification(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Notification sent successfully |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updatePassword**
+> UpdatePasswordResponse updatePassword(updatePasswordRequest)
+
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    UpdatePasswordRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let updatePasswordRequest: UpdatePasswordRequest; //
+
+const { status, data } = await apiInstance.updatePassword(
+    updatePasswordRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **updatePasswordRequest** | **UpdatePasswordRequest**|  | |
+
+
+### Return type
+
+**UpdatePasswordResponse**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Code verification successful and Password updated |  -  |
+|**400** | Bad request due to validation errors |  -  |
+|**401** | Unauthorized access |  -  |
+|**500** | Internal server error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -20,6 +20,21 @@ describe("Tests general UI flows", () => {
     mockTokenStorage.token = null; // Reset token between tests
   });
 
+  it("login should have main buttons", async () => {
+    (loginUser as jest.MockedFunction<typeof loginUser>).mockRejectedValueOnce(new Error("Invalid credentials"));
+
+    const renderResult = renderRouter("./app", {
+      initialUrl: "/login",
+    });
+
+    await waitUntilLoadingDisappeared(renderResult);
+    await verifyLoginScreenVisible(renderResult);
+
+    expect(renderResult.getByTestId("login-button-login")).toBeTruthy();
+    expect(renderResult.getByTestId("login-button-register")).toBeTruthy();
+    expect(renderResult.getByTestId("login-button-forgot-password")).toBeTruthy();
+  });
+
   it("should show an error message on login failure", async () => {
     (loginUser as jest.MockedFunction<typeof loginUser>).mockRejectedValueOnce(new Error("Invalid credentials"));
 

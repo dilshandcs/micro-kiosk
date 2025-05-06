@@ -65,6 +65,20 @@ export const verifyUserCode = async (
   }
 };
 
+export const updatePassword = async (
+  mobile: string,
+  code: string,
+  newPassword: string
+) => {
+  try {
+    const response = await api.updatePassword({mobile, code, newPassword});
+    return response.data;
+  } catch (error) {
+    console.error("Verify API error:", error);
+    throw error;
+  }
+};
+
 export const getUserInfo = async (token: string) => {
   try {
     const response = await api.getUserInfo({

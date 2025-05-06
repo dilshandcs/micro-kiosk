@@ -1,4 +1,23 @@
 {
+  "forgot": {
+    "header": {
+      "title": "Reset Password"
+    },
+    "screen": {
+      "error": {
+        "sendCodeFailed": "Failed to send code. Please try again."
+      },
+      "label": {
+        "forgot": "Reset Your Password"
+      },
+      "input": {
+        "mobile": "Enter your mobile number"
+      },
+      "button": {
+        "sendCode": "Send Code"
+      }
+    }
+  },
   "login": {
     "header": {
       "title": "Login"
@@ -12,13 +31,12 @@
       },
       "input": {
         "mobile": "Mobile Number",
-        "password": "Password",
-        "hidePassword": "Hide Password",
-        "showPassword": "Show Password"
+        "password": "Password"
       },
       "button": {
         "login": "Login",
-        "register": "Go to Register"
+        "register": "Go to Register",
+        "forgotPassword": "Forgot Password"
       }
     }
   },
@@ -45,6 +63,23 @@
       }
     }
   },
+  "verifyreset": {
+    "header": {
+      "title": "Reset Password"
+    },
+    "screen": {
+      "error": {
+        "updatePWFailed": "Reset failed. Please try again."
+      },
+      "input": {
+        "code": "Verification Code",
+        "password": "New Password"
+      },
+      "button": {
+        "resetPassword": "Reset Password"
+      }
+    }
+  },
   "home": {
     "header": {
       "title": "Home"
@@ -65,9 +100,6 @@
       },
       "label": {
         "enterCode": "Enter Verification Code"
-      },
-      "input": {
-        "code": "Enter 6-digit code"
       },
       "button": {
         "verify": "Verify"

@@ -13,6 +13,8 @@ docs/RegisterResponse.md
 docs/SendCodeRequest.md
 docs/SendCodeResponse.md
 docs/SendNotificationRequest.md
+docs/UpdatePasswordRequest.md
+docs/UpdatePasswordResponse.md
 docs/UserInfoResponse.md
 docs/VerifyUserCodeRequest.md
 docs/VerifyUserCodeResponse.md

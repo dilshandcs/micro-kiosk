@@ -125,6 +125,30 @@ components:
         token:
           type: string
           description: JWT token for the user if the verification is successful.
+    UpdatePasswordRequest:
+      type: object
+      required:
+        - mobile
+        - code
+        - newPassword
+      properties:
+        mobile:
+          type: string
+          description: The mobile of the user who is verifying the code.
+        code:
+          type: string
+          description: The 6-digit verification code to be verified.
+        newPassword:
+          type: string
+          description: The new password to be updated.
+    UpdatePasswordResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the code was successfully verified.
   responses:
     Unauthorized:
       description: Unauthorized access
@@ -217,7 +241,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /verify-user-code:
     post:
-      summary: Verify the entered verification code
+      summary: Verify the entered verification code and vrify the user
       operationId: verifyUserCode
       requestBody:
         required: true
@@ -232,6 +256,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VerifyUserCodeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /reset-password:
+    post:
+      summary: Verify the entered verification code and update the password
+      operationId: updatePassword
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '200':
+          description: Code verification successful and Password updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePasswordResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':

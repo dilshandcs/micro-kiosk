@@ -1,6 +1,5 @@
 // Import the function to be tested
-const { getVerifyCodeExpireTimeout } = require("../utils");
-const { getRandomVerifyCode } = require("../utils");
+const { getVerifyCodeExpireTimeout, getRandomVerifyCode, isValidPassword } = require("../utils");
 
 describe("getVerifyCodeExpireTimeout", () => {
   it("should return the default timeout value when VERIFY_CODE_EXPIRE_TIMEOUT is not set", () => {
@@ -48,5 +47,46 @@ describe("getRandomVerifyCode", () => {
     const result1 = getRandomVerifyCode();
     const result2 = getRandomVerifyCode();
     expect(result1).not.toBe(result2);
+  });
+});
+describe("isValidPassword", () => {
+  it("should return true for a valid password", () => {
+    const result = isValidPassword("StrongPass123");
+    expect(result).toBe(true);
+  });
+
+  it("should return false for a password that is too short", () => {
+    const result = isValidPassword("Short1");
+    expect(result).toBe(false);
+  });
+
+  it("should return false for a password without uppercase letters", () => {
+    const result = isValidPassword("weakpassword123");
+    expect(result).toBe(false);
+  });
+
+  it("should return false for a password without lowercase letters", () => {
+    const result = isValidPassword("WEAKPASSWORD123");
+    expect(result).toBe(false);
+  });
+
+  it("should return false for a password without numbers", () => {
+    const result = isValidPassword("NoNumbersHere!");
+    expect(result).toBe(false);
+  });
+
+  it("should return true for a password with no symbols but meeting other criteria", () => {
+    const result = isValidPassword("ValidPass123");
+    expect(result).toBe(true);
+  });
+
+  it("should return false for an empty password", () => {
+    const result = isValidPassword("");
+    expect(result).toBe(false);
+  });
+
+  it("should return false for a password with only spaces", () => {
+    const result = isValidPassword("        ");
+    expect(result).toBe(false);
   });
 });

@@ -1,4 +1,23 @@
 {
+  "forgot": {
+    "header": {
+      "title": "රහස් ඛේතය නැවත සකසන්න"
+    },
+    "screen": {
+      "error": {
+        "sendCodeFailed": "ඛේතය යැවීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න"
+      },
+      "label": {
+        "forgot": "Reset Your Password"
+      },
+      "input": {
+        "mobile": "ඔබගේ ජංගම දුරකථන අංකය ඇතුලත් කරන්න"
+      },
+      "button": {
+        "sendCode": "ඛේතය යවන්න"
+      }
+    }
+  },
   "login": {
     "header": {
       "title": "පිවිසුම"
@@ -12,13 +31,12 @@
       },
       "input": {
         "mobile": "ලියාපදිංචි දුරකථන අංකය",
-        "password": "රහස් ඛේතය",
-        "hidePassword": "login.screen.input.hidePassword",
-        "showPassword": "login.screen.input.showPassword"
+        "password": "රහස් ඛේතය"
       },
       "button": {
         "login": "ඇතුල් වන්න",
-        "register": "අලුතින් ලියාපදිංචි වීමට මෙතැනින්"
+        "register": "අලුතින් ලියාපදිංචි වීමට මෙතැනින්",
+        "forgotPassword": "රහස් ඛේතය අමතකයි"
       }
     }
   },
@@ -45,6 +63,23 @@
       }
     }
   },
+  "verifyreset": {
+    "header": {
+      "title": "රහස් ඛේතය නැවත සකසන්න"
+    },
+    "screen": {
+      "error": {
+        "updatePWFailed": "අසාර්ථක විය. කරුණාකර නැවත උත්සාහ කරන්න."
+      },
+      "input": {
+        "code": "තහවුරු කිරීමේ ඛේතය",
+        "password": "නව රහස් ඛේතය"
+      },
+      "button": {
+        "resetPassword": "Reset Password"
+      }
+    }
+  },
   "home": {
     "header": {
       "title": "මුල් පිටුව"
@@ -65,9 +100,6 @@
       },
       "label": {
         "enterCode": "හදුනා ගැනීමේ කේතය ඇතුළත් කරන්න"
-      },
-      "input": {
-        "code": "ඉලක්කම්-6 කේතය ඇතුළත් කරන්න"
       },
       "button": {
         "verify": "තහවුරු කරන්න"

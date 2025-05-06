@@ -72,38 +72,6 @@ describe("User Model", () => {
     });
   });
 
-  // describe('verifyUser', () => {
-  //   it('should verify the user if the code matches', async () => {
-  //     const mockUser = { id: 1, mobile: '1234567890', verification_code: '123456' };
-  //     const mockResult = { rows: [mockUser] };
-
-  //     pool.query.mockResolvedValueOnce(mockResult); // First query for user lookup
-  //     pool.query.mockResolvedValueOnce({}); // Second query for update
-
-  //     const result = await User.verifyUser('1234567890', '123456');
-  //     expect(result).toBe(true);
-  //     expect(pool.query).toHaveBeenCalledWith('SELECT * FROM users WHERE mobile = $1', ['1234567890']);
-  //     expect(pool.query).toHaveBeenCalledWith(
-  //       'UPDATE users SET is_verified = TRUE, verification_code = NULL WHERE mobile = $1',
-  //       ['1234567890']
-  //     );
-  //   });
-
-  //   it('should not verify the user if the code does not match', async () => {
-  //     const mockUser = { id: 1, mobile: '1234567890', verification_code: '123456' };
-  //     const mockResult = { rows: [mockUser] };
-
-  //     pool.query.mockResolvedValueOnce(mockResult); // First query for user lookup
-
-  //     const result = await User.verifyUser('1234567890', 'wrongcode');
-  //     expect(result).toBe(false);
-  //     expect(pool.query).toHaveBeenCalledWith('SELECT * FROM users WHERE mobile = $1', ['1234567890']);
-  //     expect(pool.query).not.toHaveBeenCalledWith(
-  //       'UPDATE users SET is_verified = TRUE, verification_code = NULL WHERE mobile = $1',
-  //       ['1234567890']
-  //     );
-  //   });
-  // });
   describe("newCode", () => {
     afterEach(() => {
       jest.clearAllMocks(); // Reset mock state after each test
@@ -227,6 +195,74 @@ describe("User Model", () => {
       const type = "mobile_verification";
 
       const result = await User.verifyUser(userId, code, type);
+
+      expect(result).toBe(false);
+      expect(pool.query).toHaveBeenCalledWith(
+        `SELECT * FROM verification_codes
+       WHERE user_id = $1 AND code = $2 AND type = $3
+       AND expires_at > NOW() AND consumed = FALSE`,
+        [userId, code, type]
+      );
+      expect(pool.query).not.toHaveBeenCalledWith(
+        `UPDATE verification_codes SET consumed = TRUE WHERE id = $1`,
+        expect.anything()
+      );
+    });
+  });
+  
+  describe("updatePassword", () => {
+    afterEach(() => {
+      jest.clearAllMocks(); // Reset mock state after each test
+    });
+
+    it("should update the pw of the user and mark the code as consumed - password_reset", async () => {
+      const mockCodeResult = {
+        rows: [
+          { id: 1, user_id: 1, code: "123456", type: "password_reset" },
+        ],
+      };
+
+      pool.query
+        .mockResolvedValueOnce(mockCodeResult) // First query to find the verification code
+        .mockResolvedValueOnce({}) // Second query to mark the code as consumed
+        .mockResolvedValueOnce({}); // Third query to mark the user as verified
+
+      const userId = 1;
+      const code = "123456";
+      const hashedPassword = "hashedPassword123";
+      const type = "password_reset";
+
+
+      const result = await User.updatePassword(userId, code, hashedPassword, type);
+
+      expect(result).toBe(true);
+
+      expect(pool.query).toHaveBeenCalledWith(
+        `SELECT * FROM verification_codes
+       WHERE user_id = $1 AND code = $2 AND type = $3
+       AND expires_at > NOW() AND consumed = FALSE`,
+        [userId, code, type]
+      );
+
+      expect(pool.query).toHaveBeenCalledWith(
+        `UPDATE verification_codes SET consumed = TRUE WHERE id = $1`,
+        [mockCodeResult.rows[0].id]
+      );
+      expect(pool.query).toHaveBeenCalledWith(
+        `UPDATE users SET password = $1 WHERE id = $2`,
+        [hashedPassword, userId]
+      );
+    });
+
+    it("should return false if the verification code is not found or expired", async () => {
+      pool.query.mockResolvedValueOnce({ rows: [] }); // No matching verification code found
+
+      const userId = 1;
+      const code = "wrongcode";
+      const hashedPassword = "hashedPassword123";
+      const type = "password_reset";
+
+      const result = await User.updatePassword(userId, code, hashedPassword, type);
 
       expect(result).toBe(false);
       expect(pool.query).toHaveBeenCalledWith(

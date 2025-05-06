@@ -39,6 +39,23 @@ export const verifyLoginScreenVisible = async (renderResult: any) => {
   });
 };
 
+export const verifyForgotPasswordScreenVisible = async (renderResult: any) => {
+  await waitFor(() => {
+    expect(renderResult.getAllByText(/forgot.screen*/).length).toBeGreaterThan(
+      0
+    );
+  });
+};
+
+
+export const verifyVerifyResetScreenVisible = async (renderResult: any) => {
+  await waitFor(() => {
+    expect(renderResult.getAllByText(/verifyreset.screen*/).length).toBeGreaterThan(
+      0
+    );
+  });
+};
+
 export const verifyRegisterScreenVisible = async (renderResult: any) => {
   await waitFor(() => {
     expect(

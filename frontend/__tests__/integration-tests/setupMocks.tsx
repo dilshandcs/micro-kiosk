@@ -62,6 +62,7 @@ jest.mock("../../api/authService", () => ({
   registerUser: jest.fn(),
   getUserInfo: jest.fn(),
   sendCode: jest.fn(),
+  updatePassword: jest.fn(),
 }));
 
 // Export axios mock for reuse

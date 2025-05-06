@@ -3,6 +3,7 @@ import { fireEvent, waitFor } from "@testing-library/react-native";
 import { verifyVerifyScreenVisible } from "../TestLayout";
 import { renderRouter } from "expo-router/testing-library";
 import { getUserInfo, sendCode, verifyUserCode } from "@/api/authService";
+import { act } from "react";
 
 const setupTest = async (initialUrl: string) => {
   mockTokenStorage.token = "existing-token";
@@ -38,20 +39,29 @@ describe("Verify Screen", () => {
     mockTokenStorage.token = null; // Reset token between tests
   });
 
-  it("only the first input is editable initially", () => {
-    const input0 = renderResult.getByTestId("verify-text-input-code-0");
-    const input1 = renderResult.getByTestId("verify-text-input-code-1");
+  it("only the first input is editable initially", async () => {
+    await waitFor(() => {
+      const input0 = renderResult.getByTestId("verify-text-input-code-0");
+      const input1 = renderResult.getByTestId("verify-text-input-code-1");
+  
+      expect(input0.props.editable).toBe(true);
+      expect(input1.props.editable).toBe(false);
+    });
 
-    expect(input0.props.editable).toBe(true);
-    expect(input1.props.editable).toBe(false);
   });
 
   it("typing in input 0 enables input 1", async () => {
-    const input0 = renderResult.getByTestId("verify-text-input-code-0");
-    fireEvent.changeText(input0, "1");
+    await act(() => {
+      const input0 = renderResult.getByTestId("verify-text-input-code-0");
+      fireEvent.changeText(input0, "1");
+    });
 
-    const input1 = renderResult.getByTestId("verify-text-input-code-1");
-    expect(input1.props.editable).toBe(true);
+    await waitFor(() => {
+      const input1 = renderResult.getByTestId("verify-text-input-code-1");
+      expect(input1.props.editable).toBe(true);
+    });
+
+
   });
 
   it("backspace on empty input moves focus back", async () => {
@@ -59,13 +69,15 @@ describe("Verify Screen", () => {
     const input1 = renderResult.getByTestId("verify-text-input-code-1");
     const input2 = renderResult.getByTestId("verify-text-input-code-2");
 
+    await act(() => {
     // Fill both inputs
     fireEvent.changeText(input0, "1");
-    fireEvent.changeText(input1, "2");
+    fireEvent.changeText(input1, "2");   
+  });
 
     // Clear input1, simulate backspace
     fireEvent(input2, "onKeyPress", { nativeEvent: { key: "Backspace" } });
-    fireEvent(input1, "onKeyPress", { nativeEvent: { key: "Backspace" } });
+    fireEvent(input1, "onKeyPress", { nativeEvent: { key: "Backspace" } }); 
 
     // 🔄 Re-query input0 to get fresh props after state change
     await waitFor(() => {
@@ -76,22 +88,34 @@ describe("Verify Screen", () => {
     });
   });
 
-  it("pasting full code in input 0 fills all boxes", () => {
-    fireEvent.changeText(
-      renderResult.getByTestId("verify-text-input-code-0"),
-      "123456"
-    );
+  it("pasting full code in input 0 fills all boxes", async () => {
+    await act(() => {
+      // Fill both inputs
+      fireEvent.changeText(
+        renderResult.getByTestId("verify-text-input-code-0"),
+        "123456"
+      );  
+    });
+
 
     for (let i = 0; i < 6; i++) {
-      const input = renderResult.getByTestId(`verify-text-input-code-${i}`);
-      expect(input.props.value).toBe((i + 1).toString());
+      await waitFor(() => {
+        const input = renderResult.getByTestId(`verify-text-input-code-${i}`);
+        expect(input.props.value).toBe((i + 1).toString());
+      });
     }
+
+
   });
 
-  it("inputs 1-5 are not editable until focused", () => {
+  it("inputs 1-5 are not editable until focused", async () => {
+
     for (let i = 1; i < 6; i++) {
-      const input = renderResult.getByTestId(`verify-text-input-code-${i}`);
-      expect(input.props.editable).toBe(false);
+      await waitFor(() => {
+        const input = renderResult.getByTestId(`verify-text-input-code-${i}`);
+        expect(input.props.editable).toBe(false);
+      });
+
     }
   });
 
@@ -102,14 +126,20 @@ describe("Verify Screen", () => {
 
     const fullCode = "123456";
 
-    for (let i = 0; i < 6; i++) {
-      fireEvent.changeText(
-        renderResult.getByTestId(`verify-text-input-code-${i}`),
-        fullCode[i]
-      );
-    }
 
-    fireEvent.press(renderResult.getByTestId("verify-button-verify"));
+    await waitFor(() => {
+      for (let i = 0; i < 6; i++) {
+        fireEvent.changeText(
+          renderResult.getByTestId(`verify-text-input-code-${i}`),
+          fullCode[i]
+        );
+      }
+    });
+
+
+    await act(() => {
+      fireEvent.press(renderResult.getByTestId("verify-button-verify"));
+    });
 
     await waitFor(() => {
       expect(verifyUserCode).toHaveBeenCalledWith(
@@ -123,14 +153,19 @@ describe("Verify Screen", () => {
   it("should show an error if a short code provided", async () => {
     const fullCode = "12345";
 
-    for (let i = 0; i < 5; i++) {
-      fireEvent.changeText(
-        renderResult.getByTestId(`verify-text-input-code-${i}`),
-        fullCode[i]
-      );
-    }
+    await waitFor(() => {
+      for (let i = 0; i < 5; i++) {
+        fireEvent.changeText(
+          renderResult.getByTestId(`verify-text-input-code-${i}`),
+          fullCode[i]
+        );
+      }
+    });
 
-    fireEvent.press(renderResult.getByTestId("verify-button-verify"));
+
+    await act(() => {
+      fireEvent.press(renderResult.getByTestId("verify-button-verify"));
+    });
 
     await waitFor(() => {
       expect(verifyUserCode).not.toHaveBeenCalled();
@@ -138,10 +173,13 @@ describe("Verify Screen", () => {
     });
   });
 
-  it("context menu is hidden on inputs 1–5", () => {
+  it("context menu is hidden on inputs 1–5", async () => {
     for (let i = 1; i < 6; i++) {
-      const input = renderResult.getByTestId(`verify-text-input-code-${i}`);
-      expect(input.props.contextMenuHidden).toBe(true);
+      await waitFor(() => {
+        const input = renderResult.getByTestId(`verify-text-input-code-${i}`);
+        expect(input.props.contextMenuHidden).toBe(true);
+      });
+
     }
   });
 });
