@@ -23,9 +23,10 @@ describe("authMiddleware", () => {
     authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      error: "Authorization header missing or malformed",
-    });
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      errorCode: "MISSING_AUTH_HEADER",
+    }));
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -35,9 +36,10 @@ describe("authMiddleware", () => {
     authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      error: "Authorization header missing or malformed",
-    });
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      errorCode: "MISSING_AUTH_HEADER",
+    }));
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -50,9 +52,10 @@ describe("authMiddleware", () => {
     authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({
-      error: "Invalid or expired token",
-    });
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      errorCode: "INVALID_TOKEN",
+    }));
     expect(next).not.toHaveBeenCalled();
   });
 

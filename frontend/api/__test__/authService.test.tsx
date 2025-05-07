@@ -34,14 +34,33 @@ describe("authService", () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it("should throw an error if loginUser API fails", async () => {
-      authService.api.loginUser = jest
-        .fn()
-        .mockRejectedValue(new Error("Login failed"));
-
-      await expect(
-        authService.loginUser("1234567890", "password")
-      ).rejects.toThrow("Login failed");
+    it("throws structured login error for known error code", async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: "INCORRECT_MOBILE_PWD",
+            message: "Incorrect mobile number",
+          },
+        },
+      };
+  
+      (authService.api.loginUser as jest.Mock).mockRejectedValue(errorResponse);
+  
+      await expect(authService.loginUser("1234567890", "password")).rejects.toEqual({
+        errorCode: "INCORRECT_MOBILE_PWD",
+        message: "Incorrect mobile number",
+      });
+    });
+  
+    it("throws unknown login error for unexpected failure", async () => {
+      const unknownError = new Error("Something went wrong");
+  
+      (authService.api.loginUser as jest.Mock).mockRejectedValue(unknownError);
+  
+      await expect(authService.loginUser("1234567890", "password")).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
+      });
     });
   });
 
@@ -65,17 +84,32 @@ describe("authService", () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it("should throw an error if registerUser API fails", async () => {
-      authService.api.registerUser = jest
-        .fn()
-        .mockRejectedValue(new Error("Registration failed"));
-
-      await expect(registerUser("1234567890", "password")).rejects.toThrow(
-        "Registration failed"
-      );
-      expect(authService.api.registerUser).toHaveBeenCalledWith({
-        mobile: "1234567890",
-        password: "password",
+    it("throws structured register error for known error code", async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: "INVALID_MOBILE",
+            message: "Invalid mobile number",
+          },
+        },
+      };
+  
+      (authService.api.registerUser as jest.Mock).mockRejectedValue(errorResponse);
+  
+      await expect(authService.registerUser("1234567890", "password")).rejects.toEqual({
+        errorCode: "INVALID_MOBILE",
+        message: "Invalid mobile number",
+      });
+    });
+  
+    it("throws unknown register error for unexpected failure", async () => {
+      const unknownError = new Error("Something went wrong");
+  
+      (authService.api.registerUser as jest.Mock).mockRejectedValue(unknownError);
+  
+      await expect(authService.registerUser("1234567890", "password")).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
       });
     });
   });
@@ -99,25 +133,42 @@ describe("authService", () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it("should throw an error if verifyUserCode API fails", async () => {
-      authService.api.verifyUserCode = jest
-        .fn()
-        .mockRejectedValue(new Error("Verification failed"));
-
-      await expect(
-        verifyUserCode("1234567890", "123456", "test-token")
-      ).rejects.toThrow("Verification failed");
-      expect(authService.api.verifyUserCode).toHaveBeenCalledWith(
-        { mobile: "1234567890", code: "123456" },
-        { headers: { Authorization: `Bearer test-token` } }
-      );
+    it("throws structured verify user code error for known error code", async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: "INCORRECT_VERIFY_CODE",
+            message: "Invalid code",
+          },
+        },
+      };
+  
+      (authService.api.verifyUserCode as jest.Mock).mockRejectedValue(errorResponse);
+  
+      await expect(authService.verifyUserCode("1234567890", "123456", "test-token")).rejects.toEqual({
+        errorCode: "INCORRECT_VERIFY_CODE",
+        message: "Invalid code",
+      });
     });
-
+  
+    it("throws unknown verify user code error for unexpected failure", async () => {
+      const unknownError = new Error("Something went wrong");
+  
+      (authService.api.verifyUserCode as jest.Mock).mockRejectedValue(unknownError);
+  
+      await expect(authService.verifyUserCode("1234567890", "123456", "test-token")).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
+      });
+    });
     
     it("should throw an error if if token is null", async () => {
       await expect(
         verifyUserCode("1234567890", "123456", null)
-      ).rejects.toThrow("verifyUserCode: token is missing");
+      ).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
+      });
     });
   });
 
@@ -139,18 +190,35 @@ describe("authService", () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it("should throw an error if getUserInfo API fails", async () => {
-      authService.api.getUserInfo = jest
-        .fn()
-        .mockRejectedValue(new Error("Get user info failed"));
-
-      await expect(getUserInfo("test-token")).rejects.toThrow(
-        "Get user info failed"
-      );
-      expect(authService.api.getUserInfo).toHaveBeenCalledWith({
-        headers: { Authorization: "Bearer test-token" },
+    it("throws structured getinfo error for known error code", async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: "INVALID_TOKEN",
+            message: "Invalid token",
+          },
+        },
+      };
+  
+      (authService.api.getUserInfo as jest.Mock).mockRejectedValue(errorResponse);
+  
+      await expect(authService.getUserInfo("test-token")).rejects.toEqual({
+        errorCode: "INVALID_TOKEN",
+        message: "Invalid token",
       });
     });
+  
+    it("throws unknown getinfo error for unexpected failure", async () => {
+      const unknownError = new Error("Something went wrong");
+  
+      (authService.api.getUserInfo as jest.Mock).mockRejectedValue(unknownError);
+  
+      await expect(authService.getUserInfo("test-token")).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
+      });
+    });
+
   });
 
   describe("sendCode", () => {
@@ -169,18 +237,34 @@ describe("authService", () => {
       );
       expect(result).toEqual(mockResponse);
     });
-
-    it("should throw an error if updatePassword API fails", async () => {
-      authService.api.sendCode = jest
-        .fn()
-        .mockRejectedValue(new Error("Verification failed"));
-
-      await expect(
-        sendCode("1234567890", SendCodeRequestTypeEnum.MobileVerification)
-      ).rejects.toThrow("Verification failed");
-      expect(authService.api.sendCode).toHaveBeenCalledWith(
-        { mobile: "1234567890", type: "mobile_verification" }
-      );
+    
+    it("throws structured sendCode error for known error code", async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: "INCORRECT_MOBILE_PWD",
+            message: "user doesn't exist",
+          },
+        },
+      };
+  
+      (authService.api.sendCode as jest.Mock).mockRejectedValue(errorResponse);
+  
+      await expect(authService.sendCode("1234567890", SendCodeRequestTypeEnum.MobileVerification)).rejects.toEqual({
+        errorCode: "INCORRECT_MOBILE_PWD",
+        message: "user doesn't exist",
+      });
+    });
+  
+    it("throws unknown sendCode error for unexpected failure", async () => {
+      const unknownError = new Error("Something went wrong");
+  
+      (authService.api.sendCode as jest.Mock).mockRejectedValue(unknownError);
+  
+      await expect(authService.sendCode("1234567890", SendCodeRequestTypeEnum.MobileVerification)).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
+      });
     });
   });
 
@@ -200,18 +284,34 @@ describe("authService", () => {
       );
       expect(result).toEqual(mockResponse);
     });
-
-    it("should throw an error if updatePassword API fails", async () => {
-      authService.api.updatePassword = jest
-        .fn()
-        .mockRejectedValue(new Error("Verification failed"));
-
-      await expect(
-        updatePassword("1234567890", "123456", "Test1234")
-      ).rejects.toThrow("Verification failed");
-      expect(authService.api.updatePassword).toHaveBeenCalledWith(
-        { mobile: "1234567890", code: "123456", newPassword: "Test1234" }
-      );
+    
+    it("throws structured updatePassword error for known error code", async () => {
+      const errorResponse = {
+        response: {
+          data: {
+            errorCode: "INVALID_PASSWORD",
+            message: "Invalid password",
+          },
+        },
+      };
+  
+      (authService.api.updatePassword as jest.Mock).mockRejectedValue(errorResponse);
+  
+      await expect(authService.updatePassword("1234567890", "123456", "Test1234")).rejects.toEqual({
+        errorCode: "INVALID_PASSWORD",
+        message: "Invalid password",
+      });
+    });
+  
+    it("throws unknown updatePassword error for unexpected failure", async () => {
+      const unknownError = new Error("Something went wrong");
+  
+      (authService.api.updatePassword as jest.Mock).mockRejectedValue(unknownError);
+  
+      await expect(authService.updatePassword("1234567890", "123456", "Test1234")).rejects.toEqual({
+        errorCode: "UNKNOWN_ERROR",
+        message: "Unexpected error occurred",
+      });
     });
   });
 });

@@ -95,7 +95,7 @@ describe("Auth Integration Tests", () => {
       });
 
       expect(res2.statusCode).toBe(400);
-      expect(res2.body.error).toMatch(/already registered/);
+      expect(res2.body.errorCode).toBe("MOBILE_ALREADY_REGISTERED");
     });
 
     invalidMobiles.forEach((mobile) => {
@@ -105,7 +105,7 @@ describe("Auth Integration Tests", () => {
           password: testPassword1,
         });
         expect([400, 401]).toContain(res.statusCode);
-        expect(res.body.error).toMatch(/Invalid mobile/);
+        expect(res.body.errorCode).toBe("INVALID_MOBILE");
       });
     });
 
@@ -116,9 +116,7 @@ describe("Auth Integration Tests", () => {
           password: pass,
         });
         expect(res.statusCode).toBe(400);
-        expect(res.body.error).toMatch(
-          /Password must be at least 8 characters/
-        );
+        expect(res.body.errorCode).toBe("INVALID_PASSWORD");
       });
     });
   });
@@ -162,7 +160,7 @@ describe("Auth Integration Tests", () => {
       });
 
       expect(res.statusCode).toBe(401);
-      expect(res.body.error).toMatch(/Invalid mobile or password/);
+      expect(res.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
     });
 
     it("should return user info with /me when login token", async () => {
@@ -209,7 +207,7 @@ describe("Auth Integration Tests", () => {
         });
 
       expect(res2.statusCode).toBe(400);
-      expect(res2.body.error).toMatch(/User does not exist/);
+      expect(res2.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
 
       // invalid code
       const res3 = await request(app)
@@ -221,7 +219,7 @@ describe("Auth Integration Tests", () => {
         });
 
       expect(res3.statusCode).toBe(400);
-      expect(res3.body.error).toMatch(/Invalid or expired verification code/);
+      expect(res3.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
 
       getRandomVerifyCode.mockReturnValue("123456");
 
@@ -231,7 +229,7 @@ describe("Auth Integration Tests", () => {
         type: "mobile_verification",
       });
       expect(res4.statusCode).toBe(400);
-      expect(res4.body.error).toMatch(/User does not exist/);
+      expect(res4.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
 
       // send code code
       const res5 = await request(app).post("/send-code").send({
@@ -281,7 +279,7 @@ describe("Auth Integration Tests", () => {
         .set("Authorization", `Bearer invalidToken123`);
 
       expect(res.statusCode).toBe(401);
-      expect(res.body.error).toMatch(/Invalid or expired token/);
+      expect(res.body.errorCode).toBe("INVALID_TOKEN");
     });
 
     it("should return 200 with user data if token is valid", async () => {
@@ -307,7 +305,7 @@ describe("Auth Integration Tests", () => {
         .set("Authorization", `Bearer ${expiredToken}`);
 
       expect(res.statusCode).toBe(401);
-      expect(res.body.error).toMatch("Invalid or expired token");
+      expect(res.body.errorCode).toBe("INVALID_TOKEN");
     });
   });
 
@@ -337,7 +335,7 @@ describe("Auth Integration Tests", () => {
         });
 
       expect(res2.statusCode).toBe(400);
-      expect(res2.body.error).toMatch(/User does not exist/);
+      expect(res2.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
 
       // invalid code
       const res3 = await request(app)
@@ -349,7 +347,7 @@ describe("Auth Integration Tests", () => {
         });
 
       expect(res3.statusCode).toBe(400);
-      expect(res3.body.error).toMatch(/Invalid or expired verification code/);
+      expect(res3.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
 
       getRandomVerifyCode.mockReturnValue("123456");
 

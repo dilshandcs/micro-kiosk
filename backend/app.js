@@ -40,8 +40,9 @@ app.use(notificationRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("Validation error:", err);
   res.status(err.status || 500).json({
+    success: false,
+    errorCode: err.errorCode || "INTERNAL_SERVER_ERROR",
     message: err.message || "Internal Server Error",
     errors: err.errors || [],
   });

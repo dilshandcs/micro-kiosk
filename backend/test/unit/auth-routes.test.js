@@ -49,9 +49,8 @@ describe("User Authentication API Tests", () => {
         mobile: "invalidMobile",
         password: mockUser.password,
       });
-
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("Invalid mobile number format");
+      expect(response.body.errorCode).toBe("INVALID_MOBILE");
     });
 
     it("should return error if password is weak", async () => {
@@ -61,8 +60,8 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe(
-        "Password must be at least 8 characters with uppercase, lowercase, and number"
+      expect(response.body.errorCode).toBe(
+        "INVALID_PASSWORD"
       );
     });
 
@@ -75,7 +74,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("Mobile number already registered");
+      expect(response.body.errorCode).toBe("MOBILE_ALREADY_REGISTERED");
     });
 
     it("should return 500 if an error occurs during registration", async () => {
@@ -88,7 +87,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.statusCode).toBe(500);
-      expect(response.body.error).toBe("Server error during registration");
+      expect(response.body.errorCode).toBe("INTERNAL_SERVER_ERROR");
     });
   });
 
@@ -122,7 +121,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.status).toBe(401);
-      expect(response.body.error).toBe("Invalid mobile or password");
+      expect(response.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
     });
 
     it("should return 500 if an error occurs during log", async () => {
@@ -134,7 +133,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.statusCode).toBe(500);
-      expect(response.body.error).toBe("Server error during login");
+      expect(response.body.errorCode).toBe("INTERNAL_SERVER_ERROR");
     });
 
     it("should login successfully and return token with expiration for verified user", async () => {
@@ -221,7 +220,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.status).toBe(401);
-      expect(response.body.error).toBe("Invalid mobile or password");
+      expect(response.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
     });
   });
 
@@ -270,7 +269,7 @@ describe("User Authentication API Tests", () => {
         });
 
       expect(response1.status).toBe(400);
-      expect(response1.body.error).toBe("Invalid verification code");
+      expect(response1.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
 
       const response2 = await request(app)
         .post("/verify-user-code")
@@ -281,7 +280,7 @@ describe("User Authentication API Tests", () => {
         });
 
       expect(response2.status).toBe(400);
-      expect(response2.body.error).toBe("Invalid verification code");
+      expect(response2.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
 
       const response3 = await request(app)
         .post("/verify-user-code")
@@ -292,7 +291,7 @@ describe("User Authentication API Tests", () => {
         });
 
       expect(response3.status).toBe(400);
-      expect(response3.body.error).toBe("Invalid verification code");
+      expect(response3.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
     });
 
     it("should return error for invalid verification code", async () => {
@@ -318,7 +317,7 @@ describe("User Authentication API Tests", () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("Invalid or expired verification code");
+      expect(response.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
     });
 
     it("should return error if token is missing", async () => {
@@ -356,7 +355,7 @@ describe("User Authentication API Tests", () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("User does not exist");
+      expect(response.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
     });
 
     it("should return 500 error if database error ", async () => {
@@ -376,7 +375,7 @@ describe("User Authentication API Tests", () => {
         });
 
       expect(response.status).toBe(500);
-      expect(response.body.error).toMatch(/Database error/);
+      expect(response.body.errorCode).toBe("INTERNAL_SERVER_ERROR");
     });
   });
 
@@ -411,7 +410,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toMatch(/User does not exist/);
+      expect(response.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
     });
 
     it("should give 500 if database error", async () => {
@@ -423,7 +422,7 @@ describe("User Authentication API Tests", () => {
       });
 
       expect(response.status).toBe(500);
-      expect(response.body.error).toMatch(/Database error/);
+      expect(response.body.errorCode).toBe("INTERNAL_SERVER_ERROR");
     });
   });
 
@@ -447,7 +446,7 @@ describe("User Authentication API Tests", () => {
       const response = await request(app).get("/me");
 
       expect(response.status).toBe(401);
-      expect(response.body.message).toMatch(/Authorization header required/);
+      expect(response.body.errorCode).toBe("INTERNAL_SERVER_ERROR");
     });
 
     it("should return error if token is invalid", async () => {
@@ -456,7 +455,7 @@ describe("User Authentication API Tests", () => {
         .set("Authorization", "Bearer invalidToken");
 
       expect(response.status).toBe(401);
-      expect(response.body.error).toBe("Invalid or expired token");
+      expect(response.body.errorCode).toBe("INVALID_TOKEN");
     });
 
     it("should return 500 if jwt.verify throws an error", async () => {
@@ -470,9 +469,8 @@ describe("User Authentication API Tests", () => {
       const res = await request(app)
         .get("/me")
         .set("authorization", `Bearer ${token}`);
-
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe("Invalid or expired token");
+      expect(res.body.errorCode).toBe("INVALID_TOKEN");
 
       mockVerifySpy.mockRestore();
     });
@@ -525,9 +523,9 @@ describe("User Authentication API Tests", () => {
           code: "A12345",
           newPassword: "Test1234",
         });
-console.log("rrrrrrrrr", response1.body);
-      expect(response1.status).toBe(400);
-      expect(response1.body.error).toBe("Invalid verification code");
+
+        expect(response1.status).toBe(400);
+      expect(response1.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
 
       const response2 = await request(app)
         .post("/reset-password")
@@ -538,7 +536,7 @@ console.log("rrrrrrrrr", response1.body);
         });
 
       expect(response2.status).toBe(400);
-      expect(response2.body.error).toBe("Invalid verification code");
+      expect(response2.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
 
       const response3 = await request(app)
         .post("/reset-password")
@@ -549,7 +547,7 @@ console.log("rrrrrrrrr", response1.body);
         });
 
       expect(response3.status).toBe(400);
-      expect(response3.body.error).toBe("Invalid verification code");
+      expect(response3.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
     });
 
     it("should return error for invalid verification code", async () => {
@@ -571,7 +569,7 @@ console.log("rrrrrrrrr", response1.body);
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("Invalid or expired verification code");
+      expect(response.body.errorCode).toBe("INCORRECT_VERIFY_CODE");
     });
 
     it("should return error if verification code requester  user not found ", async () => {
@@ -587,7 +585,7 @@ console.log("rrrrrrrrr", response1.body);
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("User does not exist");
+      expect(response.body.errorCode).toBe("INCORRECT_MOBILE_PWD");
     });
 
     it("should return 500 error if database error ", async () => {
@@ -603,7 +601,7 @@ console.log("rrrrrrrrr", response1.body);
         });
 
       expect(response.status).toBe(500);
-      expect(response.body.error).toMatch(/Database error/);
+      expect(response.body.errorCode).toBe("INTERNAL_SERVER_ERROR");
     });
 
     it("should return error if invalid mobile or password", async () => {
@@ -616,7 +614,7 @@ console.log("rrrrrrrrr", response1.body);
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe("Password must be at least 8 characters with uppercase, lowercase, and number");
+      expect(response.body.errorCode).toBe("INVALID_PASSWORD");
     });
   });  
 

@@ -32,7 +32,6 @@ describe("Rate Limiting", () => {
         mobile: `0721111113`,
         password: "Test1234",
       });
-      console.log(res.body);
     expect(res.status).toBe(429);
   });
 
@@ -43,7 +42,6 @@ describe("Rate Limiting", () => {
     };
     // Make 3 successful requests
     for (let i = 0; i < MAX_RATE_LIMIT; i++) {
-        console.log("Request number:", i);
         const res = await request(app).post("/login").send(payload);
       expect(res.status).toBe(401);
     }

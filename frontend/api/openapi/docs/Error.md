@@ -5,7 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**error** | **string** | Error message | [default to undefined]
+**success** | **boolean** |  | [default to undefined]
+**errorCode** | **string** |  | [default to undefined]
+**message** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -13,7 +15,9 @@ Name | Type | Description | Notes
 import { ModelError } from './api';
 
 const instance: ModelError = {
-    error,
+    success,
+    errorCode,
+    message,
 };
 ```
 

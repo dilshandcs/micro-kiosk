@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   Configuration,
   DefaultApi,
@@ -8,13 +9,21 @@ export const api = new DefaultApi(
   new Configuration({ basePath: process.env.EXPO_PUBLIC_API_URL })
 );
 
+const throwError = (error: any) => {
+  if (error?.response?.data?.errorCode) {
+    const { errorCode, message } = error.response.data;
+    throw { errorCode, message };
+  }
+  throw { errorCode: "UNKNOWN_ERROR", message: "Unexpected error occurred" };
+}
+
 export const loginUser = async (mobile: string, password: string) => {
   try {
     const response = await api.loginUser({ mobile, password });
     return response.data;
   } catch (error) {
     console.error("Login API error:", error);
-    throw error;
+    throwError(error);
   }
 };
 
@@ -24,7 +33,7 @@ export const registerUser = async (mobile: string, password: string) => {
     return response.data;
   } catch (error) {
     console.error("Register API error:", error);
-    throw error;
+    throwError(error);
   }
 };
 
@@ -37,7 +46,7 @@ export const sendCode = async (
     return response.data;
   } catch (error) {
     console.error("Verify API error:", error);
-    throw error;
+    throwError(error);
   }
 };
 
@@ -61,7 +70,7 @@ export const verifyUserCode = async (
     return response.data;
   } catch (error) {
     console.error("Verify API error:", error);
-    throw error;
+    throwError(error);
   }
 };
 
@@ -75,7 +84,7 @@ export const updatePassword = async (
     return response.data;
   } catch (error) {
     console.error("Verify API error:", error);
-    throw error;
+    throwError(error);
   }
 };
 
@@ -89,6 +98,6 @@ export const getUserInfo = async (token: string) => {
     return response.data;
   } catch (error) {
     console.error("Me API error:", error);
-    throw error;
+    throwError(error);
   }
 };

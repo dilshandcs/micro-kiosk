@@ -74,12 +74,39 @@ export interface LoginResponse {
  */
 export interface ModelError {
     /**
-     * Error message
+     * 
+     * @type {boolean}
+     * @memberof ModelError
+     */
+    'success': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelError
      */
-    'error': string;
+    'errorCode': ModelErrorErrorCodeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelError
+     */
+    'message'?: string;
 }
+
+export const ModelErrorErrorCodeEnum = {
+    InvalidMobile: 'INVALID_MOBILE',
+    InvalidPassword: 'INVALID_PASSWORD',
+    MobileAlreadyRegistered: 'MOBILE_ALREADY_REGISTERED',
+    IncorrectMobilePwd: 'INCORRECT_MOBILE_PWD',
+    IncorrectVerifyCode: 'INCORRECT_VERIFY_CODE',
+    InvalidToken: 'INVALID_TOKEN',
+    MissingAuthHeader: 'MISSING_AUTH_HEADER',
+    TooManyRequests: 'TOO_MANY_REQUESTS',
+    InternalServerError: 'INTERNAL_SERVER_ERROR'
+} as const;
+
+export type ModelErrorErrorCodeEnum = typeof ModelErrorErrorCodeEnum[keyof typeof ModelErrorErrorCodeEnum];
+
 /**
  * 
  * @export

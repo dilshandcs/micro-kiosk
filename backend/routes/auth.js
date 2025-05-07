@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const authMiddleware = require("../middleware/auth");
 const { createRateLimiter } = require("../middleware/limiter");
+const { ApiErrorCode } = require("./error-codes");
+const { sendErrorResponse } = require("./utils");
 
 const rateLimitMax = parseInt(process.env.RATE_LIMIT_MAX, 10) || 5;
 const registerLimiter = createRateLimiter(rateLimitMax); // max 3 for register
@@ -24,19 +26,16 @@ router.post("/register", registerLimiter, async (req, res) => {
   const trimmedPassword = password.trim();
 
   if (!/^0/.test(mobile) || !validator.isMobilePhone(mobile, "si-LK")) {
-    return res.status(400).json({ error: "Invalid mobile number format" });
+    return sendErrorResponse(res, 400, ApiErrorCode.INVALID_MOBILE, "Invalid mobile number format");
   }
 
   if (!isValidPassword(password)) {
-    return res.status(400).json({
-      error:
-        "Password must be at least 8 characters with uppercase, lowercase, and number",
-    });
+    return sendErrorResponse(res, 400, ApiErrorCode.INVALID_PASSWORD, "Password must be at least 8 characters with uppercase, lowercase, and number");
   }
 
   const existingUser = await User.findByMobile(mobile);
   if (existingUser) {
-    return res.status(400).json({ error: "Mobile number already registered" });
+    return sendErrorResponse(res, 400, ApiErrorCode.MOBILE_ALREADY_REGISTERED, "Mobile number already registered");
   }
 
   try {
@@ -55,7 +54,7 @@ router.post("/register", registerLimiter, async (req, res) => {
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ error: "Server error during registration" });
+    return sendErrorResponse(res, 500, ApiErrorCode.INTERNAL_SERVER_ERROR, "Server error during registration");
   }
 });
 
@@ -78,11 +77,11 @@ router.post("/login", loginLimiter, async (req, res) => {
         is_verified: user.is_verified,
       });
     } else {
-      res.status(401).json({ error: "Invalid mobile or password" });
+      return sendErrorResponse(res, 401, ApiErrorCode.INCORRECT_MOBILE_PWD, "Invalid mobile or password");
     }
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ error: "Server error during login" });
+    return sendErrorResponse(res, 500, ApiErrorCode.INTERNAL_SERVER_ERROR, "Server error during login");
   }
 });
 
@@ -94,14 +93,14 @@ router.post("/send-code", sendCodeLimiter, async (req, res) => {
 
   try {
     const u = await User.findByMobile(mobile);
-    if (!u) return res.status(400).json({ error: "User does not exist" });
+    if (!u) return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_MOBILE_PWD, "User does not exist");
 
     await User.newCode(u.id, code, type, expiresAt);
     console.log(`Verification code for ${mobile} (${type}): ${code}`);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database error" });
+    return sendErrorResponse(res, 500, ApiErrorCode.INTERNAL_SERVER_ERROR, "Server error during send code");
   }
 });
 
@@ -111,12 +110,13 @@ router.post("/verify-user-code", authMiddleware, verifyUserCodeLimiter, async (r
   const type = "mobile_verification";
 
   if (!code || code.length !== 6 || !validator.isNumeric(code)) {
-    return res.status(400).json({ error: "Invalid verification code" });
+    return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_VERIFY_CODE, "Invalid verification code");
+
   }
 
   try {
     const u = await User.findByMobile(mobile);
-    if (!u) return res.status(400).json({ error: "User does not exist" });
+    if (!u) return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_MOBILE_PWD, "User does not exist");
 
     const isVerified = await User.verifyUser(u.id, code, type);
     if (isVerified) {
@@ -127,11 +127,11 @@ router.post("/verify-user-code", authMiddleware, verifyUserCodeLimiter, async (r
       );
       res.json({ success: true, token });
     } else {
-      res.status(400).json({ error: "Invalid or expired verification code" });
+      return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_VERIFY_CODE, "Invalid or expired verification code");
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database error" });
+    return sendErrorResponse(res, 500, ApiErrorCode.INTERNAL_SERVER_ERROR, "Server error during verify user code");
   }
 });
 
@@ -143,30 +143,29 @@ router.post("/reset-password", resetPasswordLimiter, async (req, res) => {
   const type = "password_reset";
 
   if (!code || code.length !== 6 || !validator.isNumeric(code)) {
-    return res.status(400).json({ error: "Invalid verification code" });
+    return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_VERIFY_CODE, "Invalid verification code");
+
   }
 
   if (!isValidPassword(trimmedPassword)) {
-    return res.status(400).json({
-      error:
-        "Password must be at least 8 characters with uppercase, lowercase, and number",
-    });
+    return sendErrorResponse(res, 400, ApiErrorCode.INVALID_PASSWORD, "Password must be at least 8 characters with uppercase, lowercase, and number");
   }
 
   try {
     const u = await User.findByMobile(mobile);
-    if (!u) return res.status(400).json({ error: "User does not exist" });
+    if (!u) return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_MOBILE_PWD, "User does not exist");
 
     const hashed = await bcrypt.hash(trimmedPassword, saltRounds);
     const isValidCode = await User.updatePassword(u.id, code, hashed, type);
     if (isValidCode) {
       res.json({ success: true });
     } else {
-      res.status(400).json({ error: "Invalid or expired verification code" });
+      return sendErrorResponse(res, 400, ApiErrorCode.INCORRECT_VERIFY_CODE, "Invalid or expired verification code");
+
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database error" });
+    return sendErrorResponse(res, 500, ApiErrorCode.INTERNAL_SERVER_ERROR, "Server error during reset password");
   }
 });
 
