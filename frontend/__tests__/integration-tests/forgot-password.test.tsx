@@ -131,10 +131,18 @@ describe("Forgot Password UI flows", () => {
       success: true,
     });
 
-    (updatePassword as jest.MockedFunction<typeof updatePassword>).mockRejectedValue(new Error("Network error"));
+    (updatePassword as jest.MockedFunction<typeof updatePassword>).mockRejectedValueOnce(new Error("Network error")).mockRejectedValueOnce({
+      errorCode: "INVALID_PASSWORD",
+      message: "Invalid password",
+    }).mockRejectedValueOnce({
+      errorCode: "INCORRECT_VERIFY_CODE",
+      message: "Invalid verify code",
+    });
+
     const renderResult = renderRouter("./app", {
       initialUrl: "/forgot-password",
     });
+
     await waitUntilLoadingDisappeared(renderResult);
     await verifyForgotPasswordScreenVisible(renderResult);
 
@@ -169,6 +177,28 @@ describe("Forgot Password UI flows", () => {
         renderResult.queryByText(/reset.screen.error.updatePWFailed/)
       ).toBeTruthy();
     });
+
+    fireEvent.changeText(codeInput, "123456");
+    fireEvent.changeText(newPasswordInput, "test1234");
+    fireEvent.press(resetButton);
+
+    await waitFor(() => {
+      expect(
+        renderResult.queryByText(/reset.screen.error.invalidPwd/)
+      ).toBeTruthy();
+    });
+
+
+    fireEvent.changeText(codeInput, "12345");
+    fireEvent.changeText(newPasswordInput, "Test1234");
+    fireEvent.press(resetButton);
+
+    await waitFor(() => {
+      expect(
+        renderResult.queryByText(/reset.screen.error.incorrectVerifyCode/)
+      ).toBeTruthy();
+    });
+
   });
 
   it("should navigate to forgot password if verify reset is called without mobile directly", async () => {

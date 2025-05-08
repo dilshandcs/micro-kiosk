@@ -69,7 +69,9 @@
     },
     "screen": {
       "error": {
-        "updatePWFailed": "Reset failed. Please try again."
+        "invalidPwd": "The new password must be at least 8 characters, including at least 1 uppercase, lowercase, and number.",
+        "incorrectVerifyCode": "The verification code entered is incorrect",
+        "updatePWFailed": "Password reset failed. Please try again."
       },
       "input": {
         "code": "Verification Code",

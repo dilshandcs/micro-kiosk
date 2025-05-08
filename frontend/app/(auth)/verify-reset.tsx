@@ -4,6 +4,7 @@ import { useLocalSearchParams, router } from "expo-router";
 import { useHeaderConfig } from "@/actions/useHeaderConfig";
 import { updatePassword } from "@/api/authService";
 import { useTranslation } from "react-i18next";
+import { ModelErrorErrorCodeEnum } from "@/api/openapi";
 
 export default function VerifyResetScreen() {
   const { mobile } = useLocalSearchParams();
@@ -30,7 +31,13 @@ useEffect(() => {
         router.replace("/login");
       }
     } catch (err: any) {
-      setError(t('verifyreset.screen.error.updatePWFailed')); // err?.response?.data?.error
+      if (err?.errorCode === ModelErrorErrorCodeEnum.InvalidPassword) {
+        setError(t('verifyreset.screen.error.invalidPwd'));
+      } else if(err?.errorCode === ModelErrorErrorCodeEnum.IncorrectVerifyCode) {
+        setError(t('verifyreset.screen.error.incorrectVerifyCode'));
+      } else {
+        setError(t('verifyreset.screen.error.updatePWFailed'));
+      }
     }
   };
 
