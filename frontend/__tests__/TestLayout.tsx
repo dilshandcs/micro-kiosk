@@ -129,3 +129,11 @@ export const verifyScreenSetup = async (renderResult: any) => {
     verifyButton: renderResult.getByTestId("verify-button-verify"),
   };
 };
+
+export const verifySnackBarMessage = async (renderResult: any, message: string) => {
+  await waitFor(() => {
+    expect(renderResult.getAllByText(message).length).toBeGreaterThan(
+      0
+    );
+  });
+};

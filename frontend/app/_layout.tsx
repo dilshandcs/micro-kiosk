@@ -2,6 +2,7 @@ import { Slot } from "expo-router";
 import { AuthProvider } from "@/context/AuthContext";
 import { HeaderProvider } from "@/context/HeaderContext";
 import { Header } from "@/components/Header";
+import { SnackbarProvider } from "@/context/SnackbarProvider";
 
 function RootLayout() {
   return (
@@ -16,7 +17,10 @@ export default function Layout() {
   return (
     <AuthProvider>
       <HeaderProvider>
-        <RootLayout />
+      <SnackbarProvider>
+      <RootLayout />
+
+      </SnackbarProvider>
       </HeaderProvider>
     </AuthProvider>
   );

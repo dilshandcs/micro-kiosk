@@ -4,6 +4,9 @@
       "title": "Reset Password"
     },
     "screen": {
+      "snackbar": {
+        "codeSent": "Code sent successfully"
+      },
       "error": {
         "sendCodeFailed": "Failed to send code. Please try again."
       },

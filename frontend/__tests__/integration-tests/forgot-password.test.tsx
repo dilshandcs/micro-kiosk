@@ -1,5 +1,5 @@
 import { mockTokenStorage } from './setupMocks'; 
-import { fireEvent, waitFor } from "@testing-library/react-native";
+import { DebugFunction, fireEvent, waitFor } from "@testing-library/react-native";
 import {
   loginScreenSetup,
   registerScreenSetup,
@@ -9,6 +9,7 @@ import {
   verifyLoginScreenVisible,
   verifyRegisterScreenVisible,
   verifyScreenSetup,
+  verifySnackBarMessage,
   verifyVerifyResetScreenVisible,
   waitUntilLoadingDisappeared,
 } from "../TestLayout";
@@ -16,6 +17,8 @@ import { renderRouter } from 'expo-router/testing-library';
 import { loginUser, registerUser, sendCode, updatePassword, verifyUserCode } from '@/api/authService';
 import { SendCodeRequestTypeEnum } from '@/api/openapi';
 import VerifyResetScreen from '@/app/(auth)/verify-reset';
+import { NavigationState, PartialState } from '@react-navigation/native';
+import { ReactTestInstance } from 'react-test-renderer';
 
 describe("Forgot Password UI flows", () => {
   afterEach(() => {
@@ -54,7 +57,7 @@ describe("Forgot Password UI flows", () => {
     );
   });
 
-  it("update password flow", async () => {
+  it.only("update password flow", async () => {
     (sendCode as jest.MockedFunction<typeof sendCode>).mockResolvedValueOnce({
       success: true,
     });
@@ -81,7 +84,8 @@ describe("Forgot Password UI flows", () => {
       );
     });
     await verifyVerifyResetScreenVisible(renderResult);
-
+    await verifySnackBarMessage(renderResult, "forgot.screen.snackbar.codeSent");
+    
     const codeInput = renderResult.getByTestId("verifyreset-text-input-code");
     const newPasswordInput = renderResult.getByTestId("verifyreset-text-input-new-pw");
     const resetButton = renderResult.getByTestId("verifyreset-button-reset-pw");
@@ -211,3 +215,5 @@ describe("Forgot Password UI flows", () => {
     await verifyForgotPasswordScreenVisible(renderResult);
   });
 });
+
+

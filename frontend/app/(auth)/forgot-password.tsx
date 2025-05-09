@@ -6,12 +6,14 @@ import axios from "axios"; // or your API helper
 import { SendCodeRequestTypeEnum } from "@/api/openapi";
 import { useHeaderConfig } from "@/actions/useHeaderConfig";
 import { sendCode } from "@/api/authService";
+import { useSnackbar } from "@/context/SnackbarProvider";
 
 export default function ForgotPasswordScreen() {
   const [mobile, setMobile] = useState("");
   const [error, setError] = useState("");
   const { t } = useTranslation();
-
+  const { showMessage } = useSnackbar();
+  
     useHeaderConfig(t('forgot.header.title'), true); 
 
   const handleSendCode = async () => {
@@ -20,6 +22,7 @@ export default function ForgotPasswordScreen() {
 
       if (res.success) {
         setError("");
+        showMessage(t("forgot.screen.snackbar.codeSent"));
         router.push({ pathname: "/(auth)/verify-reset", params: { mobile } });
       }
     } catch (err) {
