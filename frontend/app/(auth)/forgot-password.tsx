@@ -2,7 +2,6 @@ import { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import axios from "axios"; // or your API helper
 import { SendCodeRequestTypeEnum } from "@/api/openapi";
 import { useHeaderConfig } from "@/actions/useHeaderConfig";
 import { sendCode } from "@/api/authService";
@@ -13,8 +12,8 @@ export default function ForgotPasswordScreen() {
   const [error, setError] = useState("");
   const { t } = useTranslation();
   const { showMessage } = useSnackbar();
-  
-    useHeaderConfig(t('forgot.header.title'), true); 
+
+  useHeaderConfig(t("forgot.header.title"), true);
 
   const handleSendCode = async () => {
     try {
@@ -26,23 +25,27 @@ export default function ForgotPasswordScreen() {
         router.push({ pathname: "/(auth)/verify-reset", params: { mobile } });
       }
     } catch (err) {
-      setError(t('forgot.screen.error.sendCodeFailed'));
+      setError(t("forgot.screen.error.sendCodeFailed"));
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('forgot.screen.label.forgot')}</Text>
+      <Text style={styles.title}>{t("forgot.screen.label.forgot")}</Text>
       <TextInput
         style={styles.input}
-        placeholder={t('forgot.screen.input.mobile')}
+        placeholder={t("forgot.screen.input.mobile")}
         keyboardType="phone-pad"
         onChangeText={setMobile}
         testID="forgot-text-input-mobile"
         value={mobile}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button title={t('forgot.screen.button.sendCode')} onPress={handleSendCode} testID='forgot-button-send-code'/>
+      <Button
+        title={t("forgot.screen.button.sendCode")}
+        onPress={handleSendCode}
+        testID="forgot-button-send-code"
+      />
     </View>
   );
 }

@@ -1,16 +1,18 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Snackbar } from 'react-native-paper';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { Snackbar } from "react-native-paper";
 
 type SnackbarContextType = {
   showMessage: (message: string) => void;
 };
 
-const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
+const SnackbarContext = createContext<SnackbarContextType | undefined>(
+  undefined
+);
 
 export const useSnackbar = () => {
   const context = useContext(SnackbarContext);
   if (!context) {
-    throw new Error('useSnackbar must be used within SnackbarProvider');
+    throw new Error("useSnackbar must be used within SnackbarProvider");
   }
   return context;
 };
@@ -32,7 +34,7 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
         onDismiss={() => setVisible(false)}
         duration={5000}
         action={{
-          label: 'OK',
+          label: "OK",
           onPress: () => setVisible(false),
         }}
       >

@@ -13,18 +13,21 @@ export default function VerifyResetScreen() {
   const [error, setError] = useState("");
   const { t } = useTranslation();
 
-      useHeaderConfig(t('verifyreset.header.title'), true); 
-  
-      
-useEffect(() => {
-  if (!mobile) {
-    router.replace({ pathname: "/(auth)/forgot-password" }); // Redirect back safely
-  }
-}, [mobile]);
+  useHeaderConfig(t("verifyreset.header.title"), true);
+
+  useEffect(() => {
+    if (!mobile) {
+      router.replace({ pathname: "/(auth)/forgot-password" }); // Redirect back safely
+    }
+  }, [mobile]);
 
   const handleReset = async () => {
     try {
-      const res = await updatePassword(Array.isArray(mobile) ? mobile[0] : mobile, code, newPassword);
+      const res = await updatePassword(
+        Array.isArray(mobile) ? mobile[0] : mobile,
+        code,
+        newPassword
+      );
 
       if (res.success) {
         setError("");
@@ -32,11 +35,13 @@ useEffect(() => {
       }
     } catch (err: any) {
       if (err?.errorCode === ModelErrorErrorCodeEnum.InvalidPassword) {
-        setError(t('verifyreset.screen.error.invalidPwd'));
-      } else if(err?.errorCode === ModelErrorErrorCodeEnum.IncorrectVerifyCode) {
-        setError(t('verifyreset.screen.error.incorrectVerifyCode'));
+        setError(t("verifyreset.screen.error.invalidPwd"));
+      } else if (
+        err?.errorCode === ModelErrorErrorCodeEnum.IncorrectVerifyCode
+      ) {
+        setError(t("verifyreset.screen.error.incorrectVerifyCode"));
       } else {
-        setError(t('verifyreset.screen.error.updatePWFailed'));
+        setError(t("verifyreset.screen.error.updatePWFailed"));
       }
     }
   };
@@ -46,7 +51,7 @@ useEffect(() => {
       <Text style={styles.title}>Reset Your Password</Text>
       <TextInput
         style={styles.input}
-        placeholder={t('verifyreset.screen.input.code')}
+        placeholder={t("verifyreset.screen.input.code")}
         keyboardType="number-pad"
         testID="verifyreset-text-input-code"
         onChangeText={setCode}
@@ -54,14 +59,18 @@ useEffect(() => {
       />
       <TextInput
         style={styles.input}
-        placeholder={t('verifyreset.screen.input.password')}
+        placeholder={t("verifyreset.screen.input.password")}
         secureTextEntry
         onChangeText={setNewPassword}
         testID="verifyreset-text-input-new-pw"
         value={newPassword}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button title={t('verifyreset.screen.button.resetPassword')} onPress={handleReset} testID='verifyreset-button-reset-pw'/>
+      <Button
+        title={t("verifyreset.screen.button.resetPassword")}
+        onPress={handleReset}
+        testID="verifyreset-button-reset-pw"
+      />
     </View>
   );
 }

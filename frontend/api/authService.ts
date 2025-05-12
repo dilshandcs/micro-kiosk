@@ -15,7 +15,7 @@ const throwError = (error: any) => {
     throw { errorCode, message };
   }
   throw { errorCode: "UNKNOWN_ERROR", message: "Unexpected error occurred" };
-}
+};
 
 export const loginUser = async (mobile: string, password: string) => {
   try {
@@ -80,7 +80,7 @@ export const updatePassword = async (
   newPassword: string
 ) => {
   try {
-    const response = await api.updatePassword({mobile, code, newPassword});
+    const response = await api.updatePassword({ mobile, code, newPassword });
     return response.data;
   } catch (error) {
     console.error("Verify API error:", error);

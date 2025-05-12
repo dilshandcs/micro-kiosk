@@ -1,24 +1,16 @@
-import { mockTokenStorage } from './setupMocks'; 
-import { DebugFunction, fireEvent, waitFor } from "@testing-library/react-native";
+import { mockTokenStorage } from "./setupMocks";
+import { fireEvent, waitFor } from "@testing-library/react-native";
 import {
-  loginScreenSetup,
-  registerScreenSetup,
   verifyForgotPasswordScreenVisible,
   verifyHeaderTitleAndBackButton,
-  verifyHomeScreenVisible,
   verifyLoginScreenVisible,
-  verifyRegisterScreenVisible,
-  verifyScreenSetup,
   verifySnackBarMessage,
   verifyVerifyResetScreenVisible,
   waitUntilLoadingDisappeared,
 } from "../TestLayout";
-import { renderRouter } from 'expo-router/testing-library';
-import { loginUser, registerUser, sendCode, updatePassword, verifyUserCode } from '@/api/authService';
-import { SendCodeRequestTypeEnum } from '@/api/openapi';
-import VerifyResetScreen from '@/app/(auth)/verify-reset';
-import { NavigationState, PartialState } from '@react-navigation/native';
-import { ReactTestInstance } from 'react-test-renderer';
+import { renderRouter } from "expo-router/testing-library";
+import { sendCode, updatePassword } from "@/api/authService";
+import { SendCodeRequestTypeEnum } from "@/api/openapi";
 
 describe("Forgot Password UI flows", () => {
   afterEach(() => {
@@ -34,7 +26,9 @@ describe("Forgot Password UI flows", () => {
     await waitUntilLoadingDisappeared(renderResult);
     await verifyLoginScreenVisible(renderResult);
 
-    const forgotPassButton = renderResult.getByTestId("login-button-forgot-password");
+    const forgotPassButton = renderResult.getByTestId(
+      "login-button-forgot-password"
+    );
     fireEvent.press(forgotPassButton);
 
     await verifyForgotPasswordScreenVisible(renderResult);
@@ -43,7 +37,6 @@ describe("Forgot Password UI flows", () => {
       "forgot.header.title",
       true
     );
-
 
     const renderResult2 = renderRouter("./app", {
       initialUrl: "/forgot-password",
@@ -57,12 +50,14 @@ describe("Forgot Password UI flows", () => {
     );
   });
 
-  it.only("update password flow", async () => {
+  it("update password flow", async () => {
     (sendCode as jest.MockedFunction<typeof sendCode>).mockResolvedValueOnce({
       success: true,
     });
 
-    (updatePassword as jest.MockedFunction<typeof updatePassword>).mockResolvedValueOnce({
+    (
+      updatePassword as jest.MockedFunction<typeof updatePassword>
+    ).mockResolvedValueOnce({
       success: true,
     });
     const renderResult = renderRouter("./app", {
@@ -84,10 +79,15 @@ describe("Forgot Password UI flows", () => {
       );
     });
     await verifyVerifyResetScreenVisible(renderResult);
-    await verifySnackBarMessage(renderResult, "forgot.screen.snackbar.codeSent");
-    
+    await verifySnackBarMessage(
+      renderResult,
+      "forgot.screen.snackbar.codeSent"
+    );
+
     const codeInput = renderResult.getByTestId("verifyreset-text-input-code");
-    const newPasswordInput = renderResult.getByTestId("verifyreset-text-input-new-pw");
+    const newPasswordInput = renderResult.getByTestId(
+      "verifyreset-text-input-new-pw"
+    );
     const resetButton = renderResult.getByTestId("verifyreset-button-reset-pw");
     fireEvent.changeText(codeInput, "123456");
     fireEvent.changeText(newPasswordInput, "Test1234");
@@ -104,7 +104,9 @@ describe("Forgot Password UI flows", () => {
   });
 
   it("error when sending verification code", async () => {
-    (sendCode as jest.MockedFunction<typeof sendCode>).mockRejectedValue(new Error("Network error"));
+    (sendCode as jest.MockedFunction<typeof sendCode>).mockRejectedValue(
+      new Error("Network error")
+    );
 
     const renderResult = renderRouter("./app", {
       initialUrl: "/forgot-password",
@@ -135,13 +137,16 @@ describe("Forgot Password UI flows", () => {
       success: true,
     });
 
-    (updatePassword as jest.MockedFunction<typeof updatePassword>).mockRejectedValueOnce(new Error("Network error")).mockRejectedValueOnce({
-      errorCode: "INVALID_PASSWORD",
-      message: "Invalid password",
-    }).mockRejectedValueOnce({
-      errorCode: "INCORRECT_VERIFY_CODE",
-      message: "Invalid verify code",
-    });
+    (updatePassword as jest.MockedFunction<typeof updatePassword>)
+      .mockRejectedValueOnce(new Error("Network error"))
+      .mockRejectedValueOnce({
+        errorCode: "INVALID_PASSWORD",
+        message: "Invalid password",
+      })
+      .mockRejectedValueOnce({
+        errorCode: "INCORRECT_VERIFY_CODE",
+        message: "Invalid verify code",
+      });
 
     const renderResult = renderRouter("./app", {
       initialUrl: "/forgot-password",
@@ -165,7 +170,9 @@ describe("Forgot Password UI flows", () => {
     await verifyVerifyResetScreenVisible(renderResult);
 
     const codeInput = renderResult.getByTestId("verifyreset-text-input-code");
-    const newPasswordInput = renderResult.getByTestId("verifyreset-text-input-new-pw");
+    const newPasswordInput = renderResult.getByTestId(
+      "verifyreset-text-input-new-pw"
+    );
     const resetButton = renderResult.getByTestId("verifyreset-button-reset-pw");
     fireEvent.changeText(codeInput, "123456");
     fireEvent.changeText(newPasswordInput, "Test1234");
@@ -192,7 +199,6 @@ describe("Forgot Password UI flows", () => {
       ).toBeTruthy();
     });
 
-
     fireEvent.changeText(codeInput, "12345");
     fireEvent.changeText(newPasswordInput, "Test1234");
     fireEvent.press(resetButton);
@@ -202,12 +208,12 @@ describe("Forgot Password UI flows", () => {
         renderResult.queryByText(/reset.screen.error.incorrectVerifyCode/)
       ).toBeTruthy();
     });
-
   });
 
   it("should navigate to forgot password if verify reset is called without mobile directly", async () => {
-
-    (updatePassword as jest.MockedFunction<typeof updatePassword>).mockRejectedValue(new Error("Network error"));
+    (
+      updatePassword as jest.MockedFunction<typeof updatePassword>
+    ).mockRejectedValue(new Error("Network error"));
     const renderResult = renderRouter("./app", {
       initialUrl: "/verify-reset",
     });
@@ -215,5 +221,3 @@ describe("Forgot Password UI flows", () => {
     await verifyForgotPasswordScreenVisible(renderResult);
   });
 });
-
-

@@ -17,10 +17,9 @@ export default function Layout() {
   return (
     <AuthProvider>
       <HeaderProvider>
-      <SnackbarProvider>
-      <RootLayout />
-
-      </SnackbarProvider>
+        <SnackbarProvider>
+          <RootLayout />
+        </SnackbarProvider>
       </HeaderProvider>
     </AuthProvider>
   );

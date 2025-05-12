@@ -85,8 +85,14 @@ export default function LoginScreen() {
         testID="login-button-register"
         onPress={() => router.push("/register")}
       />
-      <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => router.push("/forgot-password")}>
-        <Text testID="login-button-forgot-password" style={styles.forgotPasswordText}>
+      <TouchableOpacity
+        style={styles.forgotPasswordContainer}
+        onPress={() => router.push("/forgot-password")}
+      >
+        <Text
+          testID="login-button-forgot-password"
+          style={styles.forgotPasswordText}
+        >
           {t("login.screen.button.forgotPassword")}
         </Text>
       </TouchableOpacity>
@@ -117,5 +123,5 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: "blue",
     textAlign: "center",
-  }
+  },
 });

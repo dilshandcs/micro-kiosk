@@ -47,12 +47,11 @@ export const verifyForgotPasswordScreenVisible = async (renderResult: any) => {
   });
 };
 
-
 export const verifyVerifyResetScreenVisible = async (renderResult: any) => {
   await waitFor(() => {
-    expect(renderResult.getAllByText(/verifyreset.screen*/).length).toBeGreaterThan(
-      0
-    );
+    expect(
+      renderResult.getAllByText(/verifyreset.screen*/).length
+    ).toBeGreaterThan(0);
   });
 };
 
@@ -130,10 +129,11 @@ export const verifyScreenSetup = async (renderResult: any) => {
   };
 };
 
-export const verifySnackBarMessage = async (renderResult: any, message: string) => {
+export const verifySnackBarMessage = async (
+  renderResult: any,
+  message: string
+) => {
   await waitFor(() => {
-    expect(renderResult.getAllByText(message).length).toBeGreaterThan(
-      0
-    );
+    expect(renderResult.getAllByText(message).length).toBeGreaterThan(0);
   });
 };
